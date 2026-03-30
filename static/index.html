@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Extinction Oracle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bone: #e8dcc8;
+      --ash: #b5a898;
+      --ember: #c9440a;
+      --lava: #ff6b35;
+      --deep: #0d0a07;
+      --coal: #1a1410;
+      --fossil: #2e2520;
+      --smoke: #4a3f38;
+      --glow: rgba(201, 68, 10, 0.15);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--deep);
+      color: var(--bone);
+      font-family: 'Crimson Pro', serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* Animated lava background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 40% at 20% 110%, rgba(201,68,10,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 30% at 80% 100%, rgba(255,107,53,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse 100% 60% at 50% 120%, rgba(139,40,5,0.25) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: lavaShift 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes lavaShift {
+      from { opacity: 0.7; transform: scaleY(1); }
+      to   { opacity: 1;   transform: scaleY(1.06); }
+    }
+
+    /* Noise grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.4;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 2;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 60px 0 40px;
+      position: relative;
+    }
+
+    .dino-icon {
+      font-size: 56px;
+      display: block;
+      margin-bottom: 12px;
+      animation: floatDino 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 18px rgba(201,68,10,0.7));
+    }
+
+    @keyframes floatDino {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50%       { transform: translateY(-10px) rotate(2deg); }
+    }
+
+    h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--bone) 30%, var(--lava) 70%, var(--ember) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+    }
+
+    .subtitle {
+      margin-top: 14px;
+      font-size: 1.05rem;
+      color: var(--ash);
+      font-style: italic;
+      letter-spacing: 0.06em;
+    }
+
+    .divider {
+      margin: 28px auto;
+      width: 180px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--ember), transparent);
+    }
+
+    /* ── Stat bar ── */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 1.5rem;
+      color: var(--lava);
+      display: block;
+      text-shadow: 0 0 12px rgba(255,107,53,0.5);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--ash);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ── Chat area ── */
+    .chat-container {
+      background: rgba(26, 20, 16, 0.85);
+      border: 1px solid rgba(201, 68, 10, 0.25);
+      border-radius: 4px;
+      min-height: 400px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding: 28px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      backdrop-filter: blur(6px);
+      scroll-behavior: smooth;
+    }
+
+    .chat-container::-webkit-scrollbar { width: 4px; }
+    .chat-container::-webkit-scrollbar-track { background: var(--coal); }
+    .chat-container::-webkit-scrollbar-thumb { background: var(--ember); border-radius: 2px; }
+
+    /* Empty state */
+    .empty-state {
+      margin: auto;
+      text-align: center;
+      opacity: 0.45;
+    }
+
+    .empty-state .fossil-art {
+      font-size: 64px;
+      display: block;
+      margin-bottom: 16px;
+      filter: grayscale(0.4);
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--ash);
+    }
+
+    /* Messages */
+    .message {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeUp 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-role {
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ash);
+    }
+
+    .message.user .message-role { color: var(--lava); }
+
+    .message-bubble {
+      padding: 14px 18px;
+      border-radius: 3px;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .message.user .message-bubble {
+      background: rgba(201, 68, 10, 0.12);
+      border-left: 2px solid var(--ember);
+      color: var(--bone);
+      align-self: flex-end;
+      max-width: 85%;
+    }
+
+    .message.assistant .message-bubble {
+      background: rgba(46, 37, 32, 0.8);
+      border-left: 2px solid var(--smoke);
+      color: var(--bone);
+      max-width: 95%;
+    }
+
+    /* Sources */
+    .sources {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sources-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--smoke);
+      margin-bottom: 2px;
+    }
+
+    .source-chip {
+      font-size: 0.78rem;
+      color: var(--ash);
+      background: rgba(74, 63, 56, 0.4);
+      border: 1px solid rgba(74, 63, 56, 0.6);
+      border-radius: 2px;
+      padding: 5px 10px;
+      font-style: italic;
+    }
+
+    .source-chip span {
+      color: var(--lava);
+      font-style: normal;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-right: 6px;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 14px 18px;
+      background: rgba(46, 37, 32, 0.8);
+      border-left: 2px solid var(--smoke);
+      border-radius: 3px;
+      width: fit-content;
+      animation: fadeUp 0.3s ease forwards;
+    }
+
+    .typing-indicator .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--ember);
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+    .typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40%            { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Input area ── */
+    .input-area {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      background: rgba(26, 20, 16, 0.9);
+      border: 1px solid rgba(201, 68, 10, 0.3);
+      border-radius: 3px;
+      color: var(--bone);
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.6;
+      padding: 14px 18px;
+      resize: none;
+      outline: none;
+      min-height: 56px;
+      max-height: 140px;
+      overflow-y: auto;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      backdrop-filter: blur(4px);
+    }
+
+    textarea::placeholder { color: var(--smoke); font-style: italic; }
+
+    textarea:focus {
+      border-color: var(--ember);
+      box-shadow: 0 0 0 3px rgba(201,68,10,0.1), 0 0 20px rgba(201,68,10,0.08);
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--ember), var(--lava));
+      border: none;
+      border-radius: 3px;
+      color: var(--bone);
+      cursor: pointer;
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      padding: 0 22px;
+      height: 56px;
+      white-space: nowrap;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      box-shadow: 0 4px 20px rgba(201,68,10,0.3);
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(201,68,10,0.45);
+    }
+
+    .send-btn:active:not(:disabled) { transform: translateY(0); }
+
+    .send-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 0.72rem;
+      color: var(--smoke);
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* ── Suggested questions ── */
+    .suggestions {
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .suggestion-btn {
+      background: rgba(46, 37, 32, 0.7);
+      border: 1px solid rgba(201,68,10,0.2);
+      border-radius: 2px;
+      color: var(--ash);
+      cursor: pointer;
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.82rem;
+      font-style: italic;
+      padding: 6px 14px;
+      transition: all 0.2s;
+    }
+
+    .suggestion-btn:hover {
+      background: rgba(201,68,10,0.12);
+      border-color: var(--ember);
+      color: var(--bone);
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 0.72rem;
+      color: var(--smoke);
+      font-style: italic;
+      letter-spacing: 0.06em;
+    }
+
+    /* Scrollbar for textarea */
+    textarea::-webkit-scrollbar { width: 3px; }
+    textarea::-webkit-scrollbar-thumb { background: var(--ember); }
+
+    /* Ember particle */
+    .embers {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .ember {
+      position: absolute;
+      bottom: -10px;
+      width: 3px;
+      height: 3px;
+      background: var(--lava);
+      border-radius: 50%;
+      box-shadow: 0 0 6px 2px rgba(255,107,53,0.6);
+      animation: riseEmber linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes riseEmber {
+      0%   { opacity: 0; transform: translateY(0) translateX(0) scale(1); }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.4; }
+      100% { opacity: 0; transform: translateY(-100vh) translateX(var(--drift)) scale(0.3); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Ember particles -->
+<div class="embers" id="embers"></div>
+
+<div class="wrapper">
+  <header>
+    <span class="dino-icon">🦕</span>
+    <h1>Extinction Oracle</h1>
+    <p class="subtitle">Query the fossil record. Unearth what time buried.</p>
+    <div class="divider"></div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-value">252M</span>
+      <span class="stat-label">Years Ago</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">96%</span>
+      <span class="stat-label">Marine Species Lost</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">70%</span>
+      <span class="stat-label">Land Vertebrates Lost</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">10</span>
+      <span class="stat-label">Documents Indexed</span>
+    </div>
+  </div>
+
+  <div class="suggestions" id="suggestions">
+    <button class="suggestion-btn" onclick="useSuggestion(this)">What caused the Permian extinction?</button>
+    <button class="suggestion-btn" onclick="useSuggestion(this)">How many species went extinct?</button>
+    <button class="suggestion-btn" onclick="useSuggestion(this)">How long did recovery take?</button>
+    <button class="suggestion-btn" onclick="useSuggestion(this)">What survived the extinction?</button>
+  </div>
+
+  <div class="chat-container" id="chat">
+    <div class="empty-state" id="emptyState">
+      <span class="fossil-art">🦴</span>
+      <p>The oracle awaits your question.<br/>Ask anything about the great dying.</p>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-wrapper">
+      <textarea
+        id="questionInput"
+        placeholder="Ask about the extinction event…"
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="askQuestion()">
+      Ask the Oracle
+    </button>
+  </div>
+  <p class="hint">Press Enter to send · Shift+Enter for new line</p>
+
+  <footer>
+    Powered by local RAG · ChromaDB · sentence-transformers · llama3.2 via Ollama
+  </footer>
+</div>
+
+<script>
+  // ── Ember particles ──
+  const embersEl = document.getElementById('embers');
+  for (let i = 0; i < 18; i++) {
+    const e = document.createElement('div');
+    e.className = 'ember';
+    const left = Math.random() * 100;
+    const duration = 6 + Math.random() * 10;
+    const delay = Math.random() * 8;
+    const drift = (Math.random() - 0.5) * 120;
+    e.style.cssText = `
+      left: ${left}%;
+      animation-duration: ${duration}s;
+      animation-delay: ${delay}s;
+      --drift: ${drift}px;
+      width: ${2 + Math.random() * 3}px;
+      height: ${2 + Math.random() * 3}px;
+      opacity: 0;
+    `;
+    embersEl.appendChild(e);
+  }
+
+  // ── Auto-resize textarea ──
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+  }
+
+  // ── Suggestion chips ──
+  function useSuggestion(btn) {
+    const input = document.getElementById('questionInput');
+    input.value = btn.textContent;
+    autoResize(input);
+    input.focus();
+  }
+
+  // ── Key handler ──
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      askQuestion();
+    }
+  }
+
+  // ── Append message ──
+  function appendMessage(role, content, sources = []) {
+    const chat = document.getElementById('chat');
+
+    // Remove empty state
+    const empty = document.getElementById('emptyState');
+    if (empty) empty.remove();
+
+    const msg = document.createElement('div');
+    msg.className = `message ${role}`;
+
+    const roleLabel = document.createElement('div');
+    roleLabel.className = 'message-role';
+    roleLabel.textContent = role === 'user' ? '⬡ You' : '☽ Oracle';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.textContent = content;
+
+    msg.appendChild(roleLabel);
+    msg.appendChild(bubble);
+
+    if (sources.length > 0) {
+      const sourcesDiv = document.createElement('div');
+      sourcesDiv.className = 'sources';
+      const label = document.createElement('div');
+      label.className = 'sources-label';
+      label.textContent = 'Fossil record sources';
+      sourcesDiv.appendChild(label);
+      sources.forEach(s => {
+        const chip = document.createElement('div');
+        chip.className = 'source-chip';
+        chip.innerHTML = `<span>${s.file}</span>${s.preview}`;
+        sourcesDiv.appendChild(chip);
+      });
+      msg.appendChild(sourcesDiv);
+    }
+
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── Typing indicator ──
+  function showTyping() {
+    const chat = document.getElementById('chat');
+    const div = document.createElement('div');
+    div.id = 'typing';
+    div.className = 'typing-indicator';
+    div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function hideTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  // ── Main ask function ──
+  async function askQuestion() {
+    const input = document.getElementById('questionInput');
+    const btn = document.getElementById('sendBtn');
+    const question = input.value.trim();
+    if (!question) return;
+
+    // Hide suggestions after first use
+    document.getElementById('suggestions').style.display = 'none';
+
+    appendMessage('user', question);
+    input.value = '';
+    input.style.height = 'auto';
+    btn.disabled = true;
+    showTyping();
+
+    try {
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+
+      const data = await res.json();
+      hideTyping();
+
+      if (data.error) {
+        appendMessage('assistant', '⚠ ' + data.error);
+      } else {
+        appendMessage('assistant', data.answer, data.sources);
+      }
+    } catch (err) {
+      hideTyping();
+      appendMessage('assistant', '⚠ Could not reach the Oracle. Is Flask running?');
+    } finally {
+      btn.disabled = false;
+      input.focus();
+    }
+  }
+</script>
+</body>
+</html>

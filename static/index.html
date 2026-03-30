@@ -1,457 +1,507 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Extinction Oracle</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bone: #e8dcc8;
-      --ash: #b5a898;
-      --ember: #c9440a;
-      --lava: #ff6b35;
-      --deep: #0d0a07;
-      --coal: #1a1410;
-      --fossil: #2e2520;
-      --smoke: #4a3f38;
-      --glow: rgba(201, 68, 10, 0.15);
+      --jungle:    #0b1a0e;
+      --canopy:    #122718;
+      --moss:      #1e3d24;
+      --fern:      #2d5c35;
+      --leaf:      #4a8c52;
+      --lime:      #7ec77f;
+      --mist:      #b8d4b0;
+      --bone:      #e8ead0;
+      --mud:       #3b2e1a;
+      --bark:      #5c4225;
+      --amber:     #c8882a;
+      --gold:      #e6b84a;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background-color: var(--deep);
+      background-color: var(--jungle);
       color: var(--bone);
-      font-family: 'Crimson Pro', serif;
-      font-weight: 300;
+      font-family: 'Lora', serif;
+      font-weight: 400;
       min-height: 100vh;
       overflow-x: hidden;
-      cursor: default;
     }
 
-    /* Animated lava background */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse 80% 40% at 20% 110%, rgba(201,68,10,0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 30% at 80% 100%, rgba(255,107,53,0.10) 0%, transparent 55%),
-        radial-gradient(ellipse 100% 60% at 50% 120%, rgba(139,40,5,0.25) 0%, transparent 50%);
+        radial-gradient(ellipse 120% 60% at 50% 0%, rgba(30,61,36,0.9) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 50% at 0% 50%, rgba(18,39,24,0.7) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 50% at 100% 50%, rgba(18,39,24,0.7) 0%, transparent 50%),
+        radial-gradient(ellipse 100% 40% at 50% 100%, rgba(11,26,14,1) 0%, transparent 60%);
       pointer-events: none;
       z-index: 0;
-      animation: lavaShift 8s ease-in-out infinite alternate;
     }
 
-    @keyframes lavaShift {
-      from { opacity: 0.7; transform: scaleY(1); }
-      to   { opacity: 1;   transform: scaleY(1.06); }
-    }
-
-    /* Noise grain overlay */
     body::after {
       content: '';
       position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200%;
+      height: 70%;
+      background:
+        repeating-linear-gradient(
+          175deg,
+          transparent 0px,
+          transparent 80px,
+          rgba(126,199,127,0.025) 80px,
+          rgba(126,199,127,0.025) 82px,
+          transparent 82px,
+          transparent 180px
+        );
+      pointer-events: none;
+      z-index: 0;
+      animation: rayShift 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes rayShift {
+      from { opacity: 0.6; transform: translateX(-50%) rotate(-1deg); }
+      to   { opacity: 1;   transform: translateX(-50%) rotate(1deg); }
+    }
+
+    .fern-left, .fern-right {
+      position: fixed;
+      top: 0;
+      width: 280px;
+      height: 100vh;
       pointer-events: none;
       z-index: 1;
-      opacity: 0.4;
+      opacity: 0.55;
     }
+    .fern-left  { left: 0; }
+    .fern-right { right: 0; transform: scaleX(-1); }
 
     .wrapper {
       position: relative;
       z-index: 2;
-      max-width: 860px;
+      max-width: 820px;
       margin: 0 auto;
       padding: 0 24px 80px;
     }
 
-    /* ── Header ── */
     header {
       text-align: center;
-      padding: 60px 0 40px;
-      position: relative;
+      padding: 52px 0 32px;
     }
 
-    .dino-icon {
-      font-size: 56px;
+    .creature {
+      font-size: 64px;
       display: block;
-      margin-bottom: 12px;
-      animation: floatDino 4s ease-in-out infinite;
-      filter: drop-shadow(0 0 18px rgba(201,68,10,0.7));
+      margin-bottom: 8px;
+      animation: breathe 5s ease-in-out infinite;
+      filter: drop-shadow(0 4px 24px rgba(74,140,82,0.4));
     }
 
-    @keyframes floatDino {
-      0%, 100% { transform: translateY(0px) rotate(-2deg); }
-      50%       { transform: translateY(-10px) rotate(2deg); }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50%       { transform: scale(1.04) translateY(-6px); }
     }
 
     h1 {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
       font-weight: 900;
-      letter-spacing: 0.04em;
+      font-style: italic;
+      letter-spacing: 0.01em;
       line-height: 1.1;
-      background: linear-gradient(135deg, var(--bone) 30%, var(--lava) 70%, var(--ember) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
+      color: var(--bone);
+      text-shadow: 0 2px 32px rgba(74,140,82,0.3), 0 1px 0 rgba(0,0,0,0.6);
     }
+
+    h1 span { color: var(--lime); font-style: normal; }
 
     .subtitle {
-      margin-top: 14px;
-      font-size: 1.05rem;
-      color: var(--ash);
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: var(--mist);
       font-style: italic;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
+      opacity: 0.8;
     }
 
-    .divider {
-      margin: 28px auto;
-      width: 180px;
+    .vine-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px auto 28px;
+      width: fit-content;
+    }
+
+    .vine-line {
+      width: 80px;
       height: 1px;
-      background: linear-gradient(90deg, transparent, var(--ember), transparent);
+      background: linear-gradient(90deg, transparent, var(--fern));
     }
 
-    /* ── Stat bar ── */
+    .vine-line.right { background: linear-gradient(90deg, var(--fern), transparent); }
+    .vine-icon { color: var(--leaf); font-size: 18px; }
+
     .stats-bar {
       display: flex;
       justify-content: center;
-      gap: 40px;
-      margin-bottom: 36px;
+      gap: 24px;
+      margin-bottom: 28px;
       flex-wrap: wrap;
     }
 
     .stat {
       text-align: center;
+      background: rgba(30,61,36,0.5);
+      border: 1px solid rgba(74,140,82,0.2);
+      border-radius: 6px;
+      padding: 10px 20px;
+      backdrop-filter: blur(4px);
     }
 
     .stat-value {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 1.5rem;
-      color: var(--lava);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--lime);
       display: block;
-      text-shadow: 0 0 12px rgba(255,107,53,0.5);
     }
 
     .stat-label {
-      font-size: 0.75rem;
-      color: var(--ash);
+      font-size: 0.68rem;
+      color: var(--mist);
       letter-spacing: 0.12em;
       text-transform: uppercase;
+      opacity: 0.7;
     }
 
-    /* ── Chat area ── */
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .suggestion-btn {
+      background: rgba(30,61,36,0.6);
+      border: 1px solid rgba(74,140,82,0.25);
+      border-radius: 20px;
+      color: var(--mist);
+      cursor: pointer;
+      font-family: 'Lora', serif;
+      font-size: 0.8rem;
+      font-style: italic;
+      padding: 6px 16px;
+      transition: all 0.2s;
+      backdrop-filter: blur(4px);
+    }
+
+    .suggestion-btn:hover {
+      background: rgba(74,140,82,0.15);
+      border-color: var(--leaf);
+      color: var(--bone);
+    }
+
     .chat-container {
-      background: rgba(26, 20, 16, 0.85);
-      border: 1px solid rgba(201, 68, 10, 0.25);
-      border-radius: 4px;
-      min-height: 400px;
-      max-height: 520px;
+      background: rgba(11,26,14,0.75);
+      border: 1px solid rgba(74,140,82,0.18);
+      border-radius: 8px;
+      min-height: 380px;
+      max-height: 500px;
       overflow-y: auto;
       padding: 28px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
       gap: 24px;
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(8px);
       scroll-behavior: smooth;
     }
 
-    .chat-container::-webkit-scrollbar { width: 4px; }
-    .chat-container::-webkit-scrollbar-track { background: var(--coal); }
-    .chat-container::-webkit-scrollbar-thumb { background: var(--ember); border-radius: 2px; }
+    .chat-container::-webkit-scrollbar { width: 3px; }
+    .chat-container::-webkit-scrollbar-track { background: transparent; }
+    .chat-container::-webkit-scrollbar-thumb { background: var(--fern); border-radius: 2px; }
 
-    /* Empty state */
     .empty-state {
       margin: auto;
       text-align: center;
-      opacity: 0.45;
+      opacity: 0.4;
     }
 
-    .empty-state .fossil-art {
-      font-size: 64px;
-      display: block;
-      margin-bottom: 16px;
-      filter: grayscale(0.4);
-    }
+    .empty-state .icon { font-size: 52px; display: block; margin-bottom: 12px; }
 
     .empty-state p {
-      font-size: 1rem;
+      font-size: 0.92rem;
       font-style: italic;
-      color: var(--ash);
+      color: var(--mist);
+      line-height: 1.7;
     }
 
-    /* Messages */
     .message {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      animation: fadeUp 0.4s ease forwards;
+      animation: growIn 0.35s ease forwards;
       opacity: 0;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
+    @keyframes growIn {
+      from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
     .message-role {
-      font-size: 0.7rem;
-      letter-spacing: 0.14em;
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--ash);
+      color: var(--leaf);
+      opacity: 0.8;
     }
 
-    .message.user .message-role { color: var(--lava); }
+    .message.user .message-role { color: var(--amber); }
 
     .message-bubble {
       padding: 14px 18px;
-      border-radius: 3px;
-      font-size: 1rem;
-      line-height: 1.7;
+      border-radius: 6px;
+      font-size: 0.97rem;
+      line-height: 1.75;
     }
 
     .message.user .message-bubble {
-      background: rgba(201, 68, 10, 0.12);
-      border-left: 2px solid var(--ember);
+      background: rgba(59,46,26,0.6);
+      border-left: 2px solid var(--amber);
       color: var(--bone);
       align-self: flex-end;
       max-width: 85%;
     }
 
     .message.assistant .message-bubble {
-      background: rgba(46, 37, 32, 0.8);
-      border-left: 2px solid var(--smoke);
+      background: rgba(30,61,36,0.5);
+      border-left: 2px solid var(--fern);
       color: var(--bone);
-      max-width: 95%;
+      max-width: 96%;
     }
 
-    /* Sources */
     .sources {
       margin-top: 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .sources-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--smoke);
+      color: var(--fern);
       margin-bottom: 2px;
+      opacity: 0.7;
     }
 
     .source-chip {
-      font-size: 0.78rem;
-      color: var(--ash);
-      background: rgba(74, 63, 56, 0.4);
-      border: 1px solid rgba(74, 63, 56, 0.6);
-      border-radius: 2px;
+      font-size: 0.77rem;
+      color: var(--mist);
+      background: rgba(18,39,24,0.7);
+      border: 1px solid rgba(74,140,82,0.15);
+      border-radius: 4px;
       padding: 5px 10px;
       font-style: italic;
+      opacity: 0.8;
     }
 
-    .source-chip span {
-      color: var(--lava);
+    .source-chip strong {
+      color: var(--lime);
       font-style: normal;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-right: 6px;
+      font-weight: 500;
     }
 
-    /* Typing indicator */
     .typing-indicator {
       display: flex;
-      gap: 5px;
+      align-items: center;
+      gap: 6px;
       padding: 14px 18px;
-      background: rgba(46, 37, 32, 0.8);
-      border-left: 2px solid var(--smoke);
-      border-radius: 3px;
+      background: rgba(30,61,36,0.5);
+      border-left: 2px solid var(--fern);
+      border-radius: 6px;
       width: fit-content;
-      animation: fadeUp 0.3s ease forwards;
+      animation: growIn 0.3s ease forwards;
+      font-size: 0.8rem;
+      color: var(--mist);
+      font-style: italic;
+      opacity: 0.8;
     }
 
     .typing-indicator .dot {
-      width: 6px;
-      height: 6px;
-      background: var(--ember);
+      width: 5px;
+      height: 5px;
+      background: var(--leaf);
       border-radius: 50%;
-      animation: typingBounce 1.2s infinite ease-in-out;
+      animation: pulse 1.3s infinite ease-in-out;
     }
+
     .typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
 
-    @keyframes typingBounce {
-      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-      40%            { transform: translateY(-6px); opacity: 1; }
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+      40%            { transform: scale(1);   opacity: 1; }
     }
 
-    /* ── Input area ── */
     .input-area {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: flex-end;
     }
 
-    .input-wrapper {
-      flex: 1;
-      position: relative;
-    }
-
     textarea {
-      width: 100%;
-      background: rgba(26, 20, 16, 0.9);
-      border: 1px solid rgba(201, 68, 10, 0.3);
-      border-radius: 3px;
+      flex: 1;
+      background: rgba(11,26,14,0.85);
+      border: 1px solid rgba(74,140,82,0.25);
+      border-radius: 6px;
       color: var(--bone);
-      font-family: 'Crimson Pro', serif;
-      font-size: 1rem;
-      font-weight: 300;
+      font-family: 'Lora', serif;
+      font-size: 0.97rem;
       line-height: 1.6;
-      padding: 14px 18px;
+      padding: 13px 18px;
       resize: none;
       outline: none;
-      min-height: 56px;
-      max-height: 140px;
+      min-height: 52px;
+      max-height: 130px;
       overflow-y: auto;
       transition: border-color 0.2s, box-shadow 0.2s;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
     }
 
-    textarea::placeholder { color: var(--smoke); font-style: italic; }
+    textarea::placeholder { color: var(--fern); font-style: italic; }
 
     textarea:focus {
-      border-color: var(--ember);
-      box-shadow: 0 0 0 3px rgba(201,68,10,0.1), 0 0 20px rgba(201,68,10,0.08);
+      border-color: var(--leaf);
+      box-shadow: 0 0 0 3px rgba(74,140,82,0.1);
     }
 
     .send-btn {
-      background: linear-gradient(135deg, var(--ember), var(--lava));
-      border: none;
-      border-radius: 3px;
+      background: var(--fern);
+      border: 1px solid var(--leaf);
+      border-radius: 6px;
       color: var(--bone);
       cursor: pointer;
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
       padding: 0 22px;
-      height: 56px;
+      height: 52px;
       white-space: nowrap;
-      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
-      box-shadow: 0 4px 20px rgba(201,68,10,0.3);
+      transition: all 0.2s;
     }
 
     .send-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(201,68,10,0.45);
+      background: var(--leaf);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(74,140,82,0.25);
     }
 
     .send-btn:active:not(:disabled) { transform: translateY(0); }
 
-    .send-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .hint {
-      margin-top: 10px;
-      font-size: 0.72rem;
-      color: var(--smoke);
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: var(--fern);
       text-align: center;
       font-style: italic;
+      opacity: 0.7;
     }
 
-    /* ── Suggested questions ── */
-    .suggestions {
-      margin-bottom: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-
-    .suggestion-btn {
-      background: rgba(46, 37, 32, 0.7);
-      border: 1px solid rgba(201,68,10,0.2);
-      border-radius: 2px;
-      color: var(--ash);
-      cursor: pointer;
-      font-family: 'Crimson Pro', serif;
-      font-size: 0.82rem;
-      font-style: italic;
-      padding: 6px 14px;
-      transition: all 0.2s;
-    }
-
-    .suggestion-btn:hover {
-      background: rgba(201,68,10,0.12);
-      border-color: var(--ember);
-      color: var(--bone);
-    }
-
-    /* ── Footer ── */
     footer {
       text-align: center;
       margin-top: 48px;
-      font-size: 0.72rem;
-      color: var(--smoke);
+      font-size: 0.7rem;
+      color: var(--fern);
       font-style: italic;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
+      opacity: 0.6;
     }
 
-    /* Scrollbar for textarea */
-    textarea::-webkit-scrollbar { width: 3px; }
-    textarea::-webkit-scrollbar-thumb { background: var(--ember); }
-
-    /* Ember particle */
-    .embers {
+    .spore {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      border-radius: 50%;
+      background: rgba(126,199,127,0.5);
       pointer-events: none;
       z-index: 1;
-      overflow: hidden;
+      animation: floatSpore linear infinite;
     }
 
-    .ember {
-      position: absolute;
-      bottom: -10px;
-      width: 3px;
-      height: 3px;
-      background: var(--lava);
-      border-radius: 50%;
-      box-shadow: 0 0 6px 2px rgba(255,107,53,0.6);
-      animation: riseEmber linear infinite;
-      opacity: 0;
-    }
-
-    @keyframes riseEmber {
-      0%   { opacity: 0; transform: translateY(0) translateX(0) scale(1); }
+    @keyframes floatSpore {
+      0%   { transform: translateY(100vh) translateX(0) scale(1); opacity: 0; }
       10%  { opacity: 1; }
       90%  { opacity: 0.4; }
-      100% { opacity: 0; transform: translateY(-100vh) translateX(var(--drift)) scale(0.3); }
+      100% { transform: translateY(-10vh) translateX(var(--dx)) scale(0.5); opacity: 0; }
     }
   </style>
 </head>
 <body>
 
-<!-- Ember particles -->
-<div class="embers" id="embers"></div>
+<svg class="fern-left" viewBox="0 0 280 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin slice">
+  <g fill="#1e3d24" opacity="0.9">
+    <ellipse cx="-20" cy="700" rx="160" ry="28" transform="rotate(-30 -20 700)"/>
+    <ellipse cx="-10" cy="640" rx="140" ry="22" transform="rotate(-22 -10 640)"/>
+    <ellipse cx="10"  cy="580" rx="120" ry="18" transform="rotate(-15 10 580)"/>
+    <ellipse cx="20"  cy="520" rx="100" ry="16" transform="rotate(-10 20 520)"/>
+    <ellipse cx="30"  cy="460" rx="80"  ry="13" transform="rotate(-6 30 460)"/>
+    <ellipse cx="0"   cy="750" rx="180" ry="32" transform="rotate(-38 0 750)"/>
+    <ellipse cx="-30" cy="800" rx="200" ry="35" transform="rotate(-45 -30 800)"/>
+  </g>
+  <g fill="#2d5c35" opacity="0.6">
+    <ellipse cx="40"  cy="660" rx="130" ry="20" transform="rotate(-25 40 660)"/>
+    <ellipse cx="50"  cy="600" rx="110" ry="16" transform="rotate(-18 50 600)"/>
+    <ellipse cx="60"  cy="540" rx="90"  ry="14" transform="rotate(-12 60 540)"/>
+    <ellipse cx="70"  cy="480" rx="70"  ry="11" transform="rotate(-8 70 480)"/>
+  </g>
+</svg>
+
+<svg class="fern-right" viewBox="0 0 280 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin slice">
+  <g fill="#1e3d24" opacity="0.9">
+    <ellipse cx="-20" cy="700" rx="160" ry="28" transform="rotate(-30 -20 700)"/>
+    <ellipse cx="-10" cy="640" rx="140" ry="22" transform="rotate(-22 -10 640)"/>
+    <ellipse cx="10"  cy="580" rx="120" ry="18" transform="rotate(-15 10 580)"/>
+    <ellipse cx="20"  cy="520" rx="100" ry="16" transform="rotate(-10 20 520)"/>
+    <ellipse cx="30"  cy="460" rx="80"  ry="13" transform="rotate(-6 30 460)"/>
+    <ellipse cx="0"   cy="750" rx="180" ry="32" transform="rotate(-38 0 750)"/>
+    <ellipse cx="-30" cy="800" rx="200" ry="35" transform="rotate(-45 -30 800)"/>
+  </g>
+  <g fill="#2d5c35" opacity="0.6">
+    <ellipse cx="40"  cy="660" rx="130" ry="20" transform="rotate(-25 40 660)"/>
+    <ellipse cx="50"  cy="600" rx="110" ry="16" transform="rotate(-18 50 600)"/>
+    <ellipse cx="60"  cy="540" rx="90"  ry="14" transform="rotate(-12 60 540)"/>
+    <ellipse cx="70"  cy="480" rx="70"  ry="11" transform="rotate(-8 70 480)"/>
+  </g>
+</svg>
 
 <div class="wrapper">
   <header>
-    <span class="dino-icon">🦕</span>
-    <h1>Extinction Oracle</h1>
-    <p class="subtitle">Query the fossil record. Unearth what time buried.</p>
-    <div class="divider"></div>
+    <span class="creature">🌿</span>
+    <h1>Extinction <span>Oracle</span></h1>
+    <p class="subtitle">Peer through 252 million years of silence.</p>
+    <div class="vine-divider">
+      <div class="vine-line"></div>
+      <span class="vine-icon">❧</span>
+      <div class="vine-line right"></div>
+    </div>
   </header>
 
   <div class="stats-bar">
@@ -477,31 +527,27 @@
     <button class="suggestion-btn" onclick="useSuggestion(this)">What caused the Permian extinction?</button>
     <button class="suggestion-btn" onclick="useSuggestion(this)">How many species went extinct?</button>
     <button class="suggestion-btn" onclick="useSuggestion(this)">How long did recovery take?</button>
-    <button class="suggestion-btn" onclick="useSuggestion(this)">What survived the extinction?</button>
+    <button class="suggestion-btn" onclick="useSuggestion(this)">What survived the great dying?</button>
   </div>
 
   <div class="chat-container" id="chat">
     <div class="empty-state" id="emptyState">
-      <span class="fossil-art">🦴</span>
-      <p>The oracle awaits your question.<br/>Ask anything about the great dying.</p>
+      <span class="icon">🦎</span>
+      <p>The jungle holds its breath.<br/>Ask the oracle what the ancient world remembers.</p>
     </div>
   </div>
 
   <div class="input-area">
-    <div class="input-wrapper">
-      <textarea
-        id="questionInput"
-        placeholder="Ask about the extinction event…"
-        rows="1"
-        onkeydown="handleKey(event)"
-        oninput="autoResize(this)"
-      ></textarea>
-    </div>
-    <button class="send-btn" id="sendBtn" onclick="askQuestion()">
-      Ask the Oracle
-    </button>
+    <textarea
+      id="questionInput"
+      placeholder="Ask about the great dying…"
+      rows="1"
+      onkeydown="handleKey(event)"
+      oninput="autoResize(this)"
+    ></textarea>
+    <button class="send-btn" id="sendBtn" onclick="askQuestion()">Ask Oracle</button>
   </div>
-  <p class="hint">Press Enter to send · Shift+Enter for new line</p>
+  <p class="hint">Enter to send · Shift+Enter for new line</p>
 
   <footer>
     Powered by local RAG · ChromaDB · sentence-transformers · llama3.2 via Ollama
@@ -509,34 +555,23 @@
 </div>
 
 <script>
-  // ── Ember particles ──
-  const embersEl = document.getElementById('embers');
-  for (let i = 0; i < 18; i++) {
-    const e = document.createElement('div');
-    e.className = 'ember';
+  for (let i = 0; i < 22; i++) {
+    const s = document.createElement('div');
+    s.className = 'spore';
+    const size = 2 + Math.random() * 3;
     const left = Math.random() * 100;
-    const duration = 6 + Math.random() * 10;
-    const delay = Math.random() * 8;
-    const drift = (Math.random() - 0.5) * 120;
-    e.style.cssText = `
-      left: ${left}%;
-      animation-duration: ${duration}s;
-      animation-delay: ${delay}s;
-      --drift: ${drift}px;
-      width: ${2 + Math.random() * 3}px;
-      height: ${2 + Math.random() * 3}px;
-      opacity: 0;
-    `;
-    embersEl.appendChild(e);
+    const dur  = 10 + Math.random() * 18;
+    const del  = Math.random() * 12;
+    const dx   = (Math.random() - 0.5) * 150;
+    s.style.cssText = `left:${left}%;bottom:-10px;width:${size}px;height:${size}px;animation-duration:${dur}s;animation-delay:${del}s;--dx:${dx}px;opacity:0;`;
+    document.body.appendChild(s);
   }
 
-  // ── Auto-resize textarea ──
   function autoResize(el) {
     el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+    el.style.height = Math.min(el.scrollHeight, 130) + 'px';
   }
 
-  // ── Suggestion chips ──
   function useSuggestion(btn) {
     const input = document.getElementById('questionInput');
     input.value = btn.textContent;
@@ -544,19 +579,12 @@
     input.focus();
   }
 
-  // ── Key handler ──
   function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      askQuestion();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askQuestion(); }
   }
 
-  // ── Append message ──
   function appendMessage(role, content, sources = []) {
     const chat = document.getElementById('chat');
-
-    // Remove empty state
     const empty = document.getElementById('emptyState');
     if (empty) empty.remove();
 
@@ -565,7 +593,7 @@
 
     const roleLabel = document.createElement('div');
     roleLabel.className = 'message-role';
-    roleLabel.textContent = role === 'user' ? '⬡ You' : '☽ Oracle';
+    roleLabel.textContent = role === 'user' ? '✦ You' : '❧ Oracle';
 
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
@@ -579,12 +607,12 @@
       sourcesDiv.className = 'sources';
       const label = document.createElement('div');
       label.className = 'sources-label';
-      label.textContent = 'Fossil record sources';
+      label.textContent = 'From the fossil record';
       sourcesDiv.appendChild(label);
       sources.forEach(s => {
         const chip = document.createElement('div');
         chip.className = 'source-chip';
-        chip.innerHTML = `<span>${s.file}</span>${s.preview}`;
+        chip.innerHTML = `<strong>${s.file}</strong>${s.preview}`;
         sourcesDiv.appendChild(chip);
       });
       msg.appendChild(sourcesDiv);
@@ -594,13 +622,12 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
-  // ── Typing indicator ──
   function showTyping() {
     const chat = document.getElementById('chat');
     const div = document.createElement('div');
     div.id = 'typing';
     div.className = 'typing-indicator';
-    div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+    div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="margin-left:6px">Consulting the record…</span>';
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
   }
@@ -610,16 +637,13 @@
     if (t) t.remove();
   }
 
-  // ── Main ask function ──
   async function askQuestion() {
     const input = document.getElementById('questionInput');
-    const btn = document.getElementById('sendBtn');
+    const btn   = document.getElementById('sendBtn');
     const question = input.value.trim();
     if (!question) return;
 
-    // Hide suggestions after first use
     document.getElementById('suggestions').style.display = 'none';
-
     appendMessage('user', question);
     input.value = '';
     input.style.height = 'auto';
@@ -627,15 +651,13 @@
     showTyping();
 
     try {
-      const res = await fetch('/ask', {
+      const res  = await fetch('/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question })
       });
-
       const data = await res.json();
       hideTyping();
-
       if (data.error) {
         appendMessage('assistant', '⚠ ' + data.error);
       } else {
@@ -643,7 +665,7 @@
       }
     } catch (err) {
       hideTyping();
-      appendMessage('assistant', '⚠ Could not reach the Oracle. Is Flask running?');
+      appendMessage('assistant', '⚠ Could not reach the Oracle. Is Flask running on http://127.0.0.1:5000?');
     } finally {
       btn.disabled = false;
       input.focus();
